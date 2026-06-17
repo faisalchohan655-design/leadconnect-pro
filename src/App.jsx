@@ -6,6 +6,7 @@ import Dashboard from './components/pages/Dashboard';
 import LocalBusinessInsights from './components/pages/LocalBusinessInsights';
 import SocialInsights from './components/pages/SocialInsights';
 import CampaignOutreach from './components/pages/CampaignOutreach';
+import DomainInsights from './components/pages/DomainInsights';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/local-business-insights" element={<LocalBusinessInsights />} />
             <Route path="/social-insights" element={<SocialInsights />} />
+            <Route path="/domain-insights" element={<DomainInsights />} />
             <Route path="/campaign-outreach" element={<CampaignOutreach />} />
           </Routes>
         </Layout>
