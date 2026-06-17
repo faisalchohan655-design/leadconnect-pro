@@ -21,11 +21,12 @@ const Sidebar = () => {
     { path: '/settings', name: 'Settings', icon: Settings }
   ];
   return (
-    <div className={`relative transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'} bg-gradient-to-b from-indigo-900 to-purple-900 text-white shadow-2xl min-h-screen`}>
-      <button onClick={() => setCollapsed(!collapsed)} className="absolute -right-3 top-20 bg-white text-indigo-900 rounded-full p-1 shadow-md">
+    // ✅ Purple/Pink gradient
+    <div className={`relative transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'} bg-gradient-to-b from-purple-900 to-pink-900 text-white shadow-2xl min-h-screen`}>
+      <button onClick={() => setCollapsed(!collapsed)} className="absolute -right-3 top-20 bg-white text-purple-900 rounded-full p-1 shadow-md">
         {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
       </button>
-      <div className="p-5 text-2xl font-bold border-b border-indigo-800 flex items-center justify-center gap-2">
+      <div className="p-5 text-2xl font-bold border-b border-pink-800 flex items-center justify-center gap-2">
         <Zap className="w-6 h-6" />
         {!collapsed && <span>LeadConnect</span>}
         {collapsed && <span>LC</span>}
@@ -36,7 +37,7 @@ const Sidebar = () => {
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-6 py-3 my-1 mx-2 rounded-lg transition-all ${isActive ? 'bg-indigo-600 shadow-md' : 'hover:bg-indigo-800'} ${collapsed ? 'justify-center' : ''}`
+              `flex items-center gap-3 px-6 py-3 my-1 mx-2 rounded-lg transition-all ${isActive ? 'bg-purple-600 shadow-md' : 'hover:bg-purple-800'} ${collapsed ? 'justify-center' : ''}`
             }
           >
             <item.icon size={20} />
