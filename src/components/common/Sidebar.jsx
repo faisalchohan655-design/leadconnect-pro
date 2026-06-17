@@ -21,7 +21,7 @@ const Sidebar = () => {
     { path: '/settings', name: 'Settings', icon: Settings }
   ];
   return (
-    <div className={`relative transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'} bg-gradient-to-b from-indigo-900 to-purple-900 text-white shadow-2xl`}>
+    <div className={`relative transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'} bg-gradient-to-b from-indigo-900 to-purple-900 text-white shadow-2xl min-h-screen`}>
       <button onClick={() => setCollapsed(!collapsed)} className="absolute -right-3 top-20 bg-white text-indigo-900 rounded-full p-1 shadow-md">
         {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
       </button>
