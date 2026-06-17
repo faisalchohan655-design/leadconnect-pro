@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  base: './',                     // ✅ CRITICAL for Vercel/Netlify
   root: './',
   server: {
     port: 5173
@@ -11,7 +12,7 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       input: {
-        main: new URL('./index.html', import.meta.url).pathname
+        main: 'index.html'
       }
     }
   }
