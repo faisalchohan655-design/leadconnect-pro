@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: './',                     // ✅ CRITICAL for Vercel/Netlify
+  base: './',                     // ✅ CRITICAL – relative paths
   root: './',
   server: {
     port: 5173
