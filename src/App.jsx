@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { LeadsProvider } from './context/LeadsContext';
 import Layout from './components/layout/Layout';
 import Dashboard from './components/pages/Dashboard';
+import LocalBusinessInsights from './components/pages/LocalBusinessInsights';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/local-business-insights" element={<LocalBusinessInsights />} />
           </Routes>
         </Layout>
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
