@@ -1,9 +1,22 @@
-const App = () => {
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { LeadsProvider } from './context/LeadsContext';
+import Dashboard from './pages/Dashboard';
+
+function App() {
   return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
-      <h1 style={{ color: '#4f46e5', fontSize: '28px' }}>LeadConnect Pro</h1>
-      <p style={{ color: '#333' }}>If you see this, the app is working!</p>
-    </div>
+    <LeadsProvider>
+      <BrowserRouter>
+        <div className="p-6">
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Routes>
+          <Toaster position="top-right" />
+        </div>
+      </BrowserRouter>
+    </LeadsProvider>
   );
-};
+}
+
 export default App;
