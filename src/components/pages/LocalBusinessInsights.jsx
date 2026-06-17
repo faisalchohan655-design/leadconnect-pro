@@ -190,7 +190,8 @@ const LocalBusinessInsights = () => {
   // --- Render ---
   return (
     <div>
-      <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+      {/* ✅ Purple/Pink header gradient */}
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">
         Local Business Insights
       </h1>
 
@@ -204,7 +205,7 @@ const LocalBusinessInsights = () => {
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                className="w-full border rounded-xl p-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border rounded-xl p-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="e.g., restaurants, plumbers"
                 required
               />
@@ -215,7 +216,7 @@ const LocalBusinessInsights = () => {
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full border rounded-xl p-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border rounded-xl p-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="e.g., Karachi, Lahore"
                 required
               />
@@ -229,7 +230,7 @@ const LocalBusinessInsights = () => {
               max="50"
               value={count}
               onChange={(e) => setCount(parseInt(e.target.value))}
-              className="w-full border rounded-xl p-2 focus:ring-2 focus:ring-indigo-500"
+              className="w-full border rounded-xl p-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
             />
           </div>
@@ -254,10 +255,11 @@ const LocalBusinessInsights = () => {
             <p className="text-xs text-gray-400 mt-2">Enable to save only leads with selected contact information.</p>
           </div>
 
+          {/* ✅ Purple/Pink button */}
           <button
             type="submit"
             disabled={loading}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-xl flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition"
+            className="bg-purple-600 text-white px-6 py-2 rounded-xl flex items-center gap-2 hover:bg-purple-700 disabled:opacity-50 transition"
           >
             {loading ? <FaSpinner className="animate-spin" /> : <FaSearch />}
             {loading ? 'Fetching...' : 'Get Insights'}
@@ -319,7 +321,7 @@ const LocalBusinessInsights = () => {
               <button
                 onClick={handleSaveAll}
                 disabled={saving}
-                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm"
+                className="bg-purple-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm"
               >
                 <span className="text-lg">💾</span> {saving ? 'Saving...' : 'Save All'}
               </button>
@@ -385,7 +387,7 @@ const LocalBusinessInsights = () => {
                       <td className="p-3">{lead.email || '-'}</td>
                       <td className="p-3">
                         {lead.website ? (
-                          <a href={lead.website} target="_blank" className="text-blue-600 hover:underline">
+                          <a href={lead.website} target="_blank" className="text-purple-600 hover:underline">
                             Visit
                           </a>
                         ) : '-'}
