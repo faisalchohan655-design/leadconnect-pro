@@ -92,6 +92,32 @@ const WebsiteIntelligence = () => {
     }
   };
 
+  // --- Export CSV ---
+  const exportCSV = () => {
+    if (filtered.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+    const headers = ['Name', 'Phone', 'Website', 'Address', 'Rating', 'ExtractedEmail'];
+    const rows = filtered.map(l => [
+      l.name || '',
+      l.phone || '',
+      l.website || '',
+      l.address || '',
+      l.rating || '',
+      l.email || 'Not extracted'
+    ]);
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `website_intelligence_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported');
+  };
+
   // --- Export Excel ---
   const exportExcel = () => {
     if (filtered.length === 0) {
@@ -201,6 +227,13 @@ const WebsiteIntelligence = () => {
             className="bg-red-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm"
           >
             <span className="text-lg">🗑️</span> Delete
+          </button>
+          {/* ✅ CSV Button Added */}
+          <button
+            onClick={exportCSV}
+            className="bg-gray-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm"
+          >
+            <span className="text-lg">📄</span> CSV
           </button>
           <button
             onClick={exportExcel}
