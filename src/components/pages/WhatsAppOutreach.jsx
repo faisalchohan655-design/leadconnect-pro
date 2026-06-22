@@ -1,14 +1,20 @@
-import { useState } from 'react';
+import { useLeads } from '../../context/LeadsContext';
 import { FaWhatsapp, FaCopy, FaTrash } from 'react-icons/fa';
 
 const WhatsAppOutreach = () => {
-  const [contacts] = useState([
-    { id: 1, name: 'Ahmed Ali', phone: '+923001234567', status: 'Active', lastContact: '2026-06-20' },
-    { id: 2, name: 'Fatima Khan', phone: '+923001234568', status: 'Active', lastContact: '2026-06-19' },
-    { id: 3, name: 'Muhammad Hassan', phone: '+923001234569', status: 'Pending', lastContact: '2026-06-18' },
-    { id: 4, name: 'Zainab Ahmed', phone: '+923001234570', status: 'Active', lastContact: '2026-06-17' },
-    { id: 5, name: 'Usman Farooq', phone: '+923001234571', status: 'Inactive', lastContact: '2026-06-16' },
-  ]);
+  const { leads } = useLeads();
+
+  // Only leads with phone numbers
+  const contacts = leads
+    .filter(l => l.phone && l.phone.trim())
+    .slice(0, 10)
+    .map((lead, index) => ({
+      id: lead._id || index,
+      name: lead.name,
+      phone: lead.phone,
+      status: lead.status || 'Active',
+      lastContact: new Date(lead.createdAt).toLocaleDateString()
+    }));
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -26,7 +32,6 @@ const WhatsAppOutreach = () => {
       </h1>
       <p className="text-gray-500 mb-6">Manage your WhatsApp contacts and campaigns</p>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow-lg p-4 text-center">
           <p className="text-gray-500 text-sm">Total Contacts</p>
@@ -42,7 +47,6 @@ const WhatsAppOutreach = () => {
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
