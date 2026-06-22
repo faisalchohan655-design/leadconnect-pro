@@ -10,7 +10,7 @@ import WebsiteIntelligence from './components/pages/WebsiteIntelligence';
 import CampaignOutreach from './components/pages/CampaignOutreach';
 import ConversationInbox from './components/pages/ConversationInbox';
 import CRMPipeline from './components/pages/CRMPipeline';
-import WhatsAppOutreach from './components/pages/WhatsAppOutreach';
+import EmailMarketing from './components/pages/EmailMarketing';
 import Settings from './components/pages/Settings';
 
 function App() {
@@ -28,7 +28,7 @@ function App() {
             <Route path="/campaign-outreach" element={<CampaignOutreach />} />
             <Route path="/conversation-inbox" element={<ConversationInbox />} />
             <Route path="/crm-pipeline" element={<CRMPipeline />} />
-            <Route path="/whatsapp-outreach" element={<WhatsAppOutreach />} />
+            <Route path="/email-marketing" element={<EmailMarketing />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </Layout>
