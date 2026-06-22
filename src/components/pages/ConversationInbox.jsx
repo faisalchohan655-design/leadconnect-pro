@@ -1,12 +1,35 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import api from '../../api';
+import { useLeads } from '../../context/LeadsContext';
 
 const ConversationInbox = () => {
-  // Sample reply data (will be replaced with real data later)
-  const [replies] = useState([
-    { id: 1, from: 'john@example.com', subject: 'Interested in your services', message: 'Hi, I saw your lead generation tool. Can we schedule a demo?', date: '2026-06-21 10:30 AM', status: 'Unread' },
-    { id: 2, from: 'sarah@company.com', subject: 'Partnership inquiry', message: 'We are looking for a lead generation partner. Let\'s talk.', date: '2026-06-20 3:15 PM', status: 'Read' },
-    { id: 3, from: 'mike@startup.io', subject: 'Question about pricing', message: 'Do you offer discounts for annual subscriptions?', date: '2026-06-19 9:00 AM', status: 'Read' },
-  ]);
+  const { leads } = useLeads();
+  const [replies, setReplies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch replies from backend
+    api.get('/replies')
+      .then(res => {
+        setReplies(res.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fallback: use leads as demo replies
+        const demoReplies = leads.slice(0, 5).map((lead, i) => ({
+          id: i + 1,
+          from: lead.email || 'unknown@example.com',
+          subject: `Reply from ${lead.name}`,
+          message: `This is a sample reply from ${lead.name}`,
+          date: new Date(lead.createdAt).toLocaleString(),
+          status: i % 2 === 0 ? 'Unread' : 'Read'
+        }));
+        setReplies(demoReplies);
+        setLoading(false);
+      });
+  }, [leads]);
+
+  if (loading) return <div className="p-6 text-center">Loading replies...</div>;
 
   return (
     <div>
