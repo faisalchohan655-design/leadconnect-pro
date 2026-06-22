@@ -8,6 +8,10 @@ import SocialInsights from './components/pages/SocialInsights';
 import DomainInsights from './components/pages/DomainInsights';
 import WebsiteIntelligence from './components/pages/WebsiteIntelligence';
 import CampaignOutreach from './components/pages/CampaignOutreach';
+import ConversationInbox from './components/pages/ConversationInbox';
+import CRMPipeline from './components/pages/CRMPipeline';
+import WhatsAppOutreach from './components/pages/WhatsAppOutreach';
+import Settings from './components/pages/Settings';
 
 function App() {
   return (
@@ -22,6 +26,10 @@ function App() {
             <Route path="/domain-insights" element={<DomainInsights />} />
             <Route path="/website-intelligence" element={<WebsiteIntelligence />} />
             <Route path="/campaign-outreach" element={<CampaignOutreach />} />
+            <Route path="/conversation-inbox" element={<ConversationInbox />} />
+            <Route path="/crm-pipeline" element={<CRMPipeline />} />
+            <Route path="/whatsapp-outreach" element={<WhatsAppOutreach />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </Layout>
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
