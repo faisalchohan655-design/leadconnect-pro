@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Map, Users, Settings, ChevronLeft, ChevronRight,
   Zap, Mail, Globe, MessageCircle, Briefcase, Share2
 } from 'lucide-react';
-import { FaWhatsapp } from 'react-icons/fa';
+import { FaEnvelope } from 'react-icons/fa';
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -17,11 +17,10 @@ const Sidebar = () => {
     { path: '/campaign-outreach', name: 'Campaign Outreach', icon: MessageCircle },
     { path: '/conversation-inbox', name: 'Inbox', icon: Users },
     { path: '/crm-pipeline', name: 'CRM Pipeline', icon: Briefcase },
-    { path: '/whatsapp-outreach', name: 'WhatsApp', icon: FaWhatsapp },
+    { path: '/email-marketing', name: 'Email Marketing', icon: FaEnvelope },
     { path: '/settings', name: 'Settings', icon: Settings }
   ];
   return (
-    // ✅ Purple/Pink gradient
     <div className={`relative transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'} bg-gradient-to-b from-purple-900 to-pink-900 text-white shadow-2xl min-h-screen`}>
       <button onClick={() => setCollapsed(!collapsed)} className="absolute -right-3 top-20 bg-white text-purple-900 rounded-full p-1 shadow-md">
         {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
