@@ -1,17 +1,15 @@
 // frontend/src/pages/SocialInsights.jsx
-import { useState, useEffect } from 'react';
-import { useLeads } from '../../context/LeadsContext';
-import api from '../../api';
+// ✅ POORA FILE REPLACE KARO
+
+import { useState } from 'react';
+import { useLeads } from '../context/LeadsContext';
+import api from '../api';
 import toast from 'react-hot-toast';
 import { FaSearch, FaSpinner, FaGlobe, FaFilter, FaCheckCircle, FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const SocialInsights = () => {
   const { addLeads } = useLeads();
-
-  // ============================================
-  // STATE
-  // ============================================
   const [activePlatform, setActivePlatform] = useState('google_maps');
   const [searchType, setSearchType] = useState('keyword');
   const [query, setQuery] = useState('');
@@ -26,38 +24,22 @@ const SocialInsights = () => {
   const [qualityFilter, setQualityFilter] = useState('all');
   const [itemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // ✅ LOCATION STATE
   const [selectedLocation, setSelectedLocation] = useState('New York, New York, United States');
   const [customLocation, setCustomLocation] = useState('');
 
-  // ============================================
-  // LOCATIONS DROPDOWN
-  // ============================================
   const locations = [
     'New York, New York, United States',
     'Los Angeles, California, United States',
     'Chicago, Illinois, United States',
     'Houston, Texas, United States',
     'Phoenix, Arizona, United States',
-    'Philadelphia, Pennsylvania, United States',
-    'San Antonio, Texas, United States',
-    'San Diego, California, United States',
-    'Dallas, Texas, United States',
     'Austin, Texas, United States',
     'Miami, Florida, United States',
-    'Seattle, Washington, United States',
-    'Denver, Colorado, United States',
-    'Washington DC, United States',
-    'Boston, Massachusetts, United States',
     'London, England, United Kingdom',
     'Toronto, Ontario, Canada',
     'Sydney, New South Wales, Australia'
   ];
 
-  // ============================================
-  // PLATFORMS
-  // ============================================
   const platforms = [
     { id: 'google_maps', name: 'Google Maps', icon: '📍', color: 'bg-green-600' },
     { id: 'facebook', name: 'Facebook', icon: '📘', color: 'bg-blue-600' },
@@ -67,21 +49,18 @@ const SocialInsights = () => {
     { id: 'tiktok', name: 'TikTok', icon: '🎵', color: 'bg-black' }
   ];
 
-  // ============================================
-  // SEARCH FUNCTION - FIXED WITH LOCATION
-  // ============================================
+  // 🔍 SEARCH
   const handleSearch = async () => {
     if (!query.trim()) {
-      toast.error('Please enter a URL, keyword, or location');
+      toast.error('Please enter a search query');
       return;
     }
 
     setLoading(true);
-    const toastId = toast.loading(`Searching ${activePlatform} in ${selectedLocation}...`);
+    const toastId = toast.loading(`Searching ${activePlatform}...`);
 
     try {
       const locationToUse = customLocation.trim() || selectedLocation;
-
       const response = await api.post('/social/search', {
         platform: activePlatform,
         searchType,
@@ -95,35 +74,27 @@ const SocialInsights = () => {
       });
 
       const leads = response.data.results || [];
-      
-      // ✅ Auto-apply quality filter
-      let filteredLeads = leads;
-      if (verifiedOnly) {
-        filteredLeads = leads.filter(l => l.verified === true);
-      }
-
-      setResults(filteredLeads);
+      setResults(leads);
       setSelected([]);
       setCurrentPage(1);
-      
-      toast.success(`Found ${filteredLeads.length} verified leads in ${locationToUse}`, { id: toastId });
+      toast.success(`Found ${leads.length} leads`, { id: toastId });
     } catch (error) {
-      console.error('Search error:', error);
       toast.error(error.response?.data?.error || 'Search failed', { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
-  // ============================================
-  // SAVE ALL
-  // ============================================
-  const handleSaveAll = () => {
+  // ✅ SAVE ALL - YAHI FIX HAI
+  const handleSaveAll = async () => {
     if (filteredResults.length === 0) {
       toast.error('No leads to save');
       return;
     }
+
     setSaving(true);
+    const toastId = toast.loading(`Saving ${filteredResults.length} leads...`);
+
     try {
       const leadsToSave = filteredResults.map(lead => ({
         name: lead.name || 'Unknown',
@@ -131,28 +102,72 @@ const SocialInsights = () => {
         phone: lead.phone || '',
         address: lead.address || '',
         company: lead.company || '',
-        website: lead.website || '',
+        website: lead.website || lead.link || '',
         source: lead.platform || 'social',
+        platform: lead.platform || 'web',
         rating: lead.rating || 0,
-        followers: lead.followers || 0,
         verified: lead.verified || false,
         status: 'new'
       }));
-      
-      addLeads(leadsToSave);
-      toast.success(`Saved ${leadsToSave.length} leads to database`);
+
+      console.log('📝 Saving:', leadsToSave.length, 'leads');
+
+      // ⚠️ IMPORTANT: AWAIT LAGANA HAI
+      await addLeads(leadsToSave);
+
       setResults([]);
       setSelected([]);
-    } catch (err) {
-      toast.error('Failed to save leads');
+      toast.success(`✅ ${leadsToSave.length} leads saved!`, { id: toastId });
+    } catch (error) {
+      console.error('❌ Save error:', error);
+      toast.error(error.message || 'Failed to save', { id: toastId });
     } finally {
       setSaving(false);
     }
   };
 
-  // ============================================
+  // ✅ SAVE SELECTED
+  const handleSaveSelected = async () => {
+    if (selected.length === 0) {
+      toast.error('No leads selected');
+      return;
+    }
+
+    const leadsToSave = results.filter((_, idx) => selected.includes(idx));
+    
+    setSaving(true);
+    const toastId = toast.loading(`Saving ${leadsToSave.length} leads...`);
+
+    try {
+      const formatted = leadsToSave.map(lead => ({
+        name: lead.name || 'Unknown',
+        email: lead.email || '',
+        phone: lead.phone || '',
+        address: lead.address || '',
+        company: lead.company || '',
+        website: lead.website || lead.link || '',
+        source: lead.platform || 'social',
+        platform: lead.platform || 'web',
+        rating: lead.rating || 0,
+        verified: lead.verified || false,
+        status: 'new'
+      }));
+
+      // ⚠️ IMPORTANT: AWAIT LAGANA HAI
+      await addLeads(formatted);
+
+      setResults(results.filter((_, idx) => !selected.includes(idx)));
+      setSelected([]);
+      toast.success(`✅ ${formatted.length} leads saved!`, { id: toastId });
+    } catch (error) {
+      console.error('❌ Save error:', error);
+      toast.error(error.message || 'Failed to save', { id: toastId });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // DELETE SELECTED
-  // ============================================
   const handleDeleteSelected = () => {
     if (selected.length === 0) {
       toast.error('No leads selected');
@@ -161,12 +176,10 @@ const SocialInsights = () => {
     const newResults = results.filter((_, idx) => !selected.includes(idx));
     setResults(newResults);
     setSelected([]);
-    toast.success(`${selected.length} leads removed from results`);
+    toast.success(`${selected.length} leads removed`);
   };
 
-  // ============================================
   // COPY URLs
-  // ============================================
   const handleCopyUrls = () => {
     const selectedLeads = results.filter((_, idx) => selected.includes(idx));
     if (selectedLeads.length === 0) {
@@ -174,21 +187,18 @@ const SocialInsights = () => {
       return;
     }
     const urls = selectedLeads
-      .map(l => l.website || l.sourceUrl || l.link)
+      .map(l => l.website || l.link)
       .filter(url => url && url.trim())
       .join('\n');
-    
-    if (!urls) {
-      toast.error('No websites found');
-      return;
+    if (urls) {
+      navigator.clipboard.writeText(urls);
+      toast.success('URLs copied!');
+    } else {
+      toast.error('No URLs found');
     }
-    navigator.clipboard.writeText(urls);
-    toast.success(`Copied ${urls.split('\n').length} URLs to clipboard`);
   };
 
-  // ============================================
   // COPY EMAILS
-  // ============================================
   const handleCopyEmails = () => {
     const selectedLeads = results.filter((_, idx) => selected.includes(idx));
     if (selectedLeads.length === 0) {
@@ -199,24 +209,21 @@ const SocialInsights = () => {
       .map(l => l.email)
       .filter(email => email && email.trim())
       .join('; ');
-    
-    if (!emails) {
+    if (emails) {
+      navigator.clipboard.writeText(emails);
+      toast.success('Emails copied!');
+    } else {
       toast.error('No emails found');
-      return;
     }
-    navigator.clipboard.writeText(emails);
-    toast.success(`Copied ${emails.split(';').length} emails to clipboard`);
   };
 
-  // ============================================
   // EXPORT CSV
-  // ============================================
   const exportCSV = () => {
     if (filteredResults.length === 0) {
       toast.error('No data to export');
       return;
     }
-    const headers = ['Name', 'Platform', 'Email', 'Phone', 'Website', 'Address', 'Followers', 'Rating', 'Verified'];
+    const headers = ['Name', 'Platform', 'Email', 'Phone', 'Website', 'Address', 'Rating', 'Verified'];
     const rows = filteredResults.map(l => [
       l.name || '',
       l.platform || '',
@@ -224,7 +231,6 @@ const SocialInsights = () => {
       l.phone || '',
       l.website || '',
       l.address || '',
-      l.followers || 0,
       l.rating || 0,
       l.verified ? 'Yes' : 'No'
     ]);
@@ -239,12 +245,10 @@ const SocialInsights = () => {
     toast.success('CSV exported');
   };
 
-  // ============================================
   // EXPORT EXCEL
-  // ============================================
   const exportExcel = () => {
     if (filteredResults.length === 0) {
-      toast.error('No data to export');
+      toast.error('No data');
       return;
     }
     const data = filteredResults.map(l => ({
@@ -254,7 +258,6 @@ const SocialInsights = () => {
       Phone: l.phone || '',
       Website: l.website || '',
       Address: l.address || '',
-      Followers: l.followers || 0,
       Rating: l.rating || 0,
       Verified: l.verified ? 'Yes' : 'No'
     }));
@@ -265,39 +268,25 @@ const SocialInsights = () => {
     toast.success('Excel exported');
   };
 
-  // ============================================
   // FILTER RESULTS
-  // ============================================
   const filteredResults = results.filter(l => {
-    // Platform filter
     if (filterPlatform !== 'all' && l.platform !== filterPlatform) return false;
-    
-    // Quality filter
     if (qualityFilter === 'verified' && !l.verified) return false;
     if (qualityFilter === 'high' && (l.rating || 0) < 4.0) return false;
     if (qualityFilter === 'medium' && ((l.rating || 0) < 3.0 || (l.rating || 0) >= 4.0)) return false;
     if (qualityFilter === 'low' && (l.rating || 0) >= 3.0) return false;
-    
     return true;
   });
 
-  // ============================================
   // PAGINATION
-  // ============================================
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentLeads = filteredResults.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
 
-  // ============================================
-  // SELECT ALL
-  // ============================================
   const toggleSelectAll = () => {
-    if (selected.length === currentLeads.length) {
-      setSelected([]);
-    } else {
-      setSelected(currentLeads.map((_, idx) => indexOfFirst + idx));
-    }
+    if (selected.length === currentLeads.length) setSelected([]);
+    else setSelected(currentLeads.map((_, idx) => indexOfFirst + idx));
   };
 
   const toggleSelect = (idx) => {
@@ -309,44 +298,28 @@ const SocialInsights = () => {
     }
   };
 
-  // ============================================
-  // GET PLATFORM COLOR
-  // ============================================
   const getPlatformColor = (platformId) => {
     const p = platforms.find(p => p.id === platformId);
     return p ? p.color : 'bg-gray-500';
   };
 
-  // ============================================
-  // RENDER STARS
-  // ============================================
   const renderStars = (rating) => {
     if (!rating || rating === 0) return '—';
     const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 >= 0.5;
     const stars = [];
     for (let i = 0; i < fullStars; i++) {
       stars.push(<FaStar key={i} className="text-yellow-400" size={12} />);
     }
-    if (halfStar) {
-      stars.push(<FaStarHalfAlt key="half" className="text-yellow-400" size={12} />);
-    }
     return stars;
   };
 
-  // ============================================
-  // RENDER
-  // ============================================
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">
         Social Insights
       </h1>
-      <p className="text-gray-500 mb-6">Professional social media intelligence for lead generation</p>
 
-      {/* ========================================== */}
-      {/* PLATFORM TABS */}
-      {/* ========================================== */}
+      {/* Platform Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
         {platforms.map(platform => (
           <button
@@ -364,11 +337,8 @@ const SocialInsights = () => {
         ))}
       </div>
 
-      {/* ========================================== */}
-      {/* SEARCH SECTION */}
-      {/* ========================================== */}
+      {/* Search Section */}
       <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        {/* Search Type */}
         <div className="flex flex-wrap gap-4 mb-4">
           {['keyword', 'location', 'url'].map(type => (
             <label key={type} className="flex items-center gap-2 cursor-pointer">
@@ -385,21 +355,18 @@ const SocialInsights = () => {
           ))}
         </div>
 
-        {/* Query Input */}
         <div className="mb-4">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Enter ${activePlatform} ${searchType}...`}
-            className="w-full border border-gray-300 rounded-xl py-3 px-4 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full border border-gray-300 rounded-xl py-3 px-4 focus:ring-2 focus:ring-purple-500"
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
 
-        {/* Options Row */}
         <div className="flex flex-wrap gap-4 items-center mb-4">
-          {/* Leads Count */}
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium">Leads:</label>
             <select
@@ -414,74 +381,53 @@ const SocialInsights = () => {
             </select>
           </div>
 
-          {/* Deep Crawl */}
           <label className="flex items-center gap-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={deepCrawl} 
-              onChange={(e) => setDeepCrawl(e.target.checked)} 
-              className="w-4 h-4 accent-purple-600"
-            />
+            <input type="checkbox" checked={deepCrawl} onChange={(e) => setDeepCrawl(e.target.checked)} className="w-4 h-4" />
             <span className="text-sm">Deep Crawl</span>
           </label>
 
-          {/* Verified Only */}
           <label className="flex items-center gap-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={verifiedOnly} 
-              onChange={(e) => setVerifiedOnly(e.target.checked)} 
-              className="w-4 h-4 accent-purple-600"
-            />
+            <input type="checkbox" checked={verifiedOnly} onChange={(e) => setVerifiedOnly(e.target.checked)} className="w-4 h-4" />
             <span className="text-sm">Verified Only</span>
           </label>
         </div>
 
-        {/* ✅ LOCATION SELECTOR - NEW */}
+        {/* Location Selector */}
         <div className="flex flex-wrap gap-3 items-center mb-4 p-3 bg-purple-50 rounded-xl border border-purple-200">
-          <div className="flex items-center gap-2">
-            <FaGlobe className="text-purple-600" />
-            <span className="text-sm font-medium text-purple-700">Location:</span>
-          </div>
-          
+          <FaGlobe className="text-purple-600" />
           <select
             value={selectedLocation}
             onChange={(e) => {
               setSelectedLocation(e.target.value);
               setCustomLocation('');
             }}
-            className="flex-1 border border-purple-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 bg-white min-w-[200px]"
+            className="flex-1 border border-purple-200 rounded-lg px-3 py-2 text-sm bg-white min-w-[200px]"
           >
             {locations.map(loc => (
               <option key={loc} value={loc}>{loc}</option>
             ))}
           </select>
-          
           <span className="text-gray-400 text-sm">OR</span>
-          
           <input
             type="text"
-            placeholder="Custom location (e.g., Dubai, UAE)"
+            placeholder="Custom location"
             value={customLocation}
             onChange={(e) => setCustomLocation(e.target.value)}
-            className="flex-1 border border-purple-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 bg-white min-w-[150px]"
+            className="flex-1 border border-purple-200 rounded-lg px-3 py-2 text-sm bg-white min-w-[150px]"
           />
         </div>
 
-        {/* Search Button */}
         <button
           onClick={handleSearch}
           disabled={loading}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl hover:shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-2 font-medium"
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2 font-medium"
         >
           {loading ? <FaSpinner className="animate-spin" /> : <FaSearch size={18} />}
           {loading ? 'Searching...' : 'Get Insights'}
         </button>
       </div>
 
-      {/* ========================================== */}
-      {/* RESULTS */}
-      {/* ========================================== */}
+      {/* Results */}
       {results.length > 0 && (
         <>
           {/* Filter Bar */}
@@ -496,10 +442,8 @@ const SocialInsights = () => {
                 onChange={(e) => setFilterPlatform(e.target.value)}
                 className="border rounded-lg p-2 text-sm"
               >
-                <option value="all">All Platforms</option>
-                {platforms.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
+                <option value="all">All</option>
+                {platforms.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
 
               <div className="flex items-center gap-2 ml-4">
@@ -512,7 +456,7 @@ const SocialInsights = () => {
                 className="border rounded-lg p-2 text-sm"
               >
                 <option value="all">All</option>
-                <option value="verified">✅ Verified Only</option>
+                <option value="verified">✅ Verified</option>
                 <option value="high">⭐ High (4+)</option>
                 <option value="medium">⭐ Medium (3-4)</option>
                 <option value="low">⭐ Low (0-3)</option>
@@ -527,47 +471,33 @@ const SocialInsights = () => {
           {/* Action Bar */}
           <div className="bg-white rounded-xl shadow p-3 mb-6 flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap gap-2 items-center">
-              <button
-                onClick={toggleSelectAll}
-                className="bg-gray-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-gray-700 transition"
-              >
+              <button onClick={toggleSelectAll} className="bg-gray-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-gray-700">
                 {selected.length === currentLeads.length ? '☑️' : '☐'} Select All
               </button>
-              <button
-                onClick={handleSaveAll}
-                disabled={saving}
-                className="bg-purple-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-purple-700 transition disabled:opacity-50"
-              >
+              
+              {/* ✅ SAVE SELECTED - AWAIT LAGAO */}
+              <button onClick={handleSaveSelected} disabled={saving || selected.length === 0} className="bg-purple-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-purple-700 disabled:opacity-50">
+                💾 {saving ? 'Saving...' : `Save Selected (${selected.length})`}
+              </button>
+              
+              {/* ✅ SAVE ALL - AWAIT LAGAO */}
+              <button onClick={handleSaveAll} disabled={saving} className="bg-green-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-green-700 disabled:opacity-50">
                 💾 {saving ? 'Saving...' : 'Save All'}
               </button>
-              <button
-                onClick={handleCopyUrls}
-                className="bg-cyan-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-cyan-700 transition"
-              >
+              
+              <button onClick={handleCopyUrls} className="bg-cyan-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-cyan-700">
                 📋 Copy URLs
               </button>
-              <button
-                onClick={handleCopyEmails}
-                className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-indigo-700 transition"
-              >
+              <button onClick={handleCopyEmails} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-indigo-700">
                 ✉️ Copy Emails
               </button>
-              <button
-                onClick={handleDeleteSelected}
-                className="bg-red-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-red-700 transition"
-              >
+              <button onClick={handleDeleteSelected} className="bg-red-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-red-700">
                 🗑️ Delete
               </button>
-              <button
-                onClick={exportCSV}
-                className="bg-gray-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-gray-700 transition"
-              >
+              <button onClick={exportCSV} className="bg-gray-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-gray-700">
                 📄 CSV
               </button>
-              <button
-                onClick={exportExcel}
-                className="bg-green-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-green-700 transition"
-              >
+              <button onClick={exportExcel} className="bg-green-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-green-700">
                 📊 Excel
               </button>
             </div>
@@ -587,7 +517,6 @@ const SocialInsights = () => {
                   <th className="p-3">Email</th>
                   <th className="p-3">Phone</th>
                   <th className="p-3">Website</th>
-                  <th className="p-3">Address</th>
                   <th className="p-3">Rating</th>
                   <th className="p-3">Verified</th>
                 </tr>
@@ -596,7 +525,7 @@ const SocialInsights = () => {
                 {currentLeads.map((lead, idx) => {
                   const globalIdx = indexOfFirst + idx;
                   return (
-                    <tr key={globalIdx} className="border-t hover:bg-gray-50 transition">
+                    <tr key={globalIdx} className="border-t hover:bg-gray-50">
                       <td className="p-3 text-center">
                         <input
                           type="checkbox"
@@ -626,9 +555,6 @@ const SocialInsights = () => {
                           </a>
                         ) : '-'}
                       </td>
-                      <td className="p-3 text-sm text-gray-600 max-w-[150px] truncate">
-                        {lead.address || '-'}
-                      </td>
                       <td className="p-3">
                         <div className="flex items-center gap-1">
                           {renderStars(lead.rating)}
@@ -647,13 +573,6 @@ const SocialInsights = () => {
                     </tr>
                   );
                 })}
-                {currentLeads.length === 0 && (
-                  <tr>
-                    <td colSpan="9" className="text-center p-6 text-gray-500">
-                      No leads match the current filters
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
@@ -664,17 +583,15 @@ const SocialInsights = () => {
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-300 transition"
+                className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-300"
               >
                 ◀ Prev
               </button>
-              <span className="px-4 py-2 text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
+              <span className="px-4 py-2 text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-300 transition"
+                className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-300"
               >
                 Next ▶
               </button>
@@ -688,12 +605,7 @@ const SocialInsights = () => {
         <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
           <div className="text-6xl mb-4">🔍</div>
           <h3 className="text-xl font-semibold text-gray-600">No Results Yet</h3>
-          <p className="text-gray-400 mt-2">
-            Search for leads on {activePlatform} to get started
-          </p>
-          <p className="text-sm text-gray-300 mt-1">
-            Make sure to select a location for accurate results
-          </p>
+          <p className="text-gray-400 mt-2">Search for leads to get started</p>
         </div>
       )}
     </div>
