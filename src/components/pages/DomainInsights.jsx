@@ -7,7 +7,7 @@ import { FaSearch, FaSpinner } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const DomainInsights = () => {
-  const { addLeads } = useLeads();
+  const { addLeads, fetchLeads } = useLeads();
 
   // State
   const [singleUrl, setSingleUrl] = useState('');
@@ -76,7 +76,7 @@ const DomainInsights = () => {
   };
 
   // ==========================================
-  // ✅ SAVE SELECTED - FIXED WITH AWAIT
+  // ✅ SAVE SELECTED - FIXED
   // ==========================================
   const handleSaveSelected = async () => {
     if (selected.length === 0) {
@@ -104,9 +104,9 @@ const DomainInsights = () => {
     const toastId = toast.loading(`Saving ${formatted.length} leads...`);
 
     try {
-      // ⚠️ IMPORTANT: AWAIT LAGANA HAI
       await addLeads(formatted);
-      
+      await fetchLeads();
+
       setResults(results.filter((_, idx) => !selected.includes(idx)));
       setSelected([]);
       toast.success(`✅ ${formatted.length} leads saved!`, { id: toastId });
