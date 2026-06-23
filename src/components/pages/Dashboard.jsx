@@ -1,16 +1,18 @@
 // frontend/src/pages/Dashboard.jsx
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, Star, Phone, Globe, Award, TrendingUp } from 'lucide-react';
+import { Users, Star, Phone, Globe, Award, TrendingUp, RefreshCw } from 'lucide-react';
 
 const Dashboard = () => {
   const [leads, setLeads] = useState([]);
   const [stats, setStats] = useState({ total: 0, avgRating: 0, withPhone: 0, withWebsite: 0, highRated: 0 });
+  const [refresh, setRefresh] = useState(0);  // ✅ FORCE REFRESH
+  const [loading, setLoading] = useState(true);
 
   const API_URL = 'https://leadconnect-backend-production.up.railway.app/api';
 
   useEffect(() => {
-    // ✅ CACHE DISABLE - NO 304
+    setLoading(true);
     fetch(`${API_URL}/leads`, {
       headers: {
         'Cache-Control': 'no-cache',
@@ -27,9 +29,19 @@ const Dashboard = () => {
         const withWebsite = data.filter(l => l.website && l.website.trim()).length;
         const highRated = data.filter(l => (l.rating || 0) >= 4).length;
         setStats({ total, avgRating, withPhone, withWebsite, highRated });
+        setLoading(false);
       })
-      .catch(console.error);
-  }, []);
+      .catch(err => {
+        console.error('Error:', err);
+        setLoading(false);
+      });
+  }, [refresh]);  // ✅ REFRESH DEPENDENCY
+
+  // ✅ MANUAL REFRESH FUNCTION
+  const handleRefresh = () => {
+    console.log('🔄 Refreshing dashboard...');
+    setRefresh(prev => prev + 1);
+  };
 
   // Last 7 days data
   const last7Days = [...Array(7)].map((_, i) => {
@@ -55,9 +67,32 @@ const Dashboard = () => {
     { rating: '5★', count: leads.filter(l => Math.floor(l.rating || 0) === 5).length },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <RefreshCw className="w-10 h-10 text-indigo-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">Dashboard</h1>
+      {/* Header with Refresh Button */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Dashboard</h1>
+        <button 
+          onClick={handleRefresh}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Refresh
+        </button>
+      </div>
+
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
         <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between"><div><p className="text-gray-500 text-sm">Total Leads</p><p className="text-3xl font-bold text-gray-800">{stats.total}</p></div><div className="bg-indigo-100 p-3 rounded-full"><Users className="w-6 h-6 text-indigo-600" /></div></div>
         <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between"><div><p className="text-gray-500 text-sm">Avg Rating</p><p className="text-3xl font-bold text-gray-800">{stats.avgRating}★</p></div><div className="bg-yellow-100 p-3 rounded-full"><Star className="w-6 h-6 text-yellow-600" /></div></div>
@@ -65,6 +100,8 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between"><div><p className="text-gray-500 text-sm">With Website</p><p className="text-3xl font-bold text-gray-800">{stats.withWebsite}</p></div><div className="bg-blue-100 p-3 rounded-full"><Globe className="w-6 h-6 text-blue-600" /></div></div>
         <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between"><div><p className="text-gray-500 text-sm">4+ Stars</p><p className="text-3xl font-bold text-gray-800">{stats.highRated}</p></div><div className="bg-purple-100 p-3 rounded-full"><Award className="w-6 h-6 text-purple-600" /></div></div>
       </div>
+
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-5 rounded-2xl shadow-lg"><h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5" /> Leads (Last 7 Days)</h2><ResponsiveContainer width="100%" height={280}><BarChart data={chartData}><XAxis dataKey="date" /><YAxis /><Tooltip /><Bar dataKey="count" fill="#4f46e5" radius={[8,8,0,0]} /></BarChart></ResponsiveContainer></div>
         <div className="bg-white p-5 rounded-2xl shadow-lg"><h2 className="text-xl font-semibold mb-4">Phone Availability</h2><ResponsiveContainer width="100%" height={280}><PieChart><Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label><Cell fill={COLORS[0]} /><Cell fill={COLORS[1]} /></Pie><Tooltip /></PieChart></ResponsiveContainer></div>
