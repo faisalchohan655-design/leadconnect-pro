@@ -1,4 +1,4 @@
-// frontend/src/pages/Dashboard.jsx
+// frontend/src/components/pages/Dashboard.jsx
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Users, Star, Phone, Globe, Award, TrendingUp } from 'lucide-react';
@@ -7,7 +7,6 @@ const Dashboard = () => {
   const [leads, setLeads] = useState([]);
   const [stats, setStats] = useState({ total: 0, avgRating: 0, withPhone: 0, withWebsite: 0, highRated: 0 });
 
-  // ✅ DIRECT FETCH - NO API IMPORT
   const API_URL = 'https://new-backend-production-2666.up.railway.app/api';
 
   useEffect(() => {
@@ -25,7 +24,6 @@ const Dashboard = () => {
       .catch(console.error);
   }, []);
 
-  // Last 7 days data
   const last7Days = [...Array(7)].map((_, i) => {
     const d = new Date(); d.setDate(d.getDate() - (6 - i));
     return d.toISOString().slice(0,10);
