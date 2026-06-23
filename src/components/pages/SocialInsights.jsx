@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { useLeads } from '../../context/LeadsContext.jsx';
 import api from '../../api';
 import toast from 'react-hot-toast';
-import { FaSearch, FaSpinner, FaGlobe, FaFilter, FaCheckCircle, FaStar, FaStarHalfAlt } from 'react-icons/fa';
+import { FaSearch, FaSpinner, FaGlobe, FaFilter, FaCheckCircle, FaStar } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const SocialInsights = () => {
-  const { addLeads } = useLeads();
+  const { addLeads, fetchLeads } = useLeads();
 
   // State
   const [activePlatform, setActivePlatform] = useState('google_maps');
@@ -88,7 +88,7 @@ const SocialInsights = () => {
   };
 
   // ==========================================
-  // ✅ SAVE ALL - FIXED WITH AWAIT
+  // ✅ SAVE ALL - FIXED
   // ==========================================
   const handleSaveAll = async () => {
     if (filteredResults.length === 0) {
@@ -116,8 +116,8 @@ const SocialInsights = () => {
 
       console.log('📝 Saving:', leadsToSave.length, 'leads');
 
-      // ⚠️ IMPORTANT: AWAIT LAGANA HAI
       await addLeads(leadsToSave);
+      await fetchLeads();
 
       setResults([]);
       setSelected([]);
@@ -131,7 +131,7 @@ const SocialInsights = () => {
   };
 
   // ==========================================
-  // ✅ SAVE SELECTED - FIXED WITH AWAIT
+  // ✅ SAVE SELECTED - FIXED
   // ==========================================
   const handleSaveSelected = async () => {
     if (selected.length === 0) {
@@ -159,8 +159,8 @@ const SocialInsights = () => {
         status: 'new'
       }));
 
-      // ⚠️ IMPORTANT: AWAIT LAGANA HAI
       await addLeads(formatted);
+      await fetchLeads();
 
       setResults(results.filter((_, idx) => !selected.includes(idx)));
       setSelected([]);
