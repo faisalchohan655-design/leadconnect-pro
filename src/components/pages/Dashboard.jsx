@@ -1,127 +1,219 @@
-import { useEffect, useState } from 'react';
-import { useLeads } from '../../context/LeadsContext';
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
-} from 'recharts';
-import { Users, Star, Phone, Globe, Award, TrendingUp } from 'lucide-react';
+// frontend/src/pages/Dashboard.jsx
+import React, { useEffect, useState } from 'react';
+import { useLeads } from '../context/LeadsContext.jsx';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Users, UserPlus, TrendingUp, Award, Mail, Phone, Globe, Star } from 'lucide-react';
 
 const Dashboard = () => {
-  const { leads, loading } = useLeads();
+  const { leads, fetchLeads, loading } = useLeads();
   const [stats, setStats] = useState({
     total: 0,
-    avgRating: 0,
-    withPhone: 0,
-    withWebsite: 0,
-    highRated: 0
+    new: 0,
+    contacted: 0,
+    qualified: 0,
+    converted: 0
   });
 
+  // ✅ FORCE FETCH ON MOUNT
   useEffect(() => {
-    const total = leads.length;
-    const avgRating = total ? (leads.reduce((s, l) => s + (l.rating || 0), 0) / total) : 0;
-    const withPhone = leads.filter(l => l.phone && l.phone.trim()).length;
-    const withWebsite = leads.filter(l => l.website && l.website.trim()).length;
-    const highRated = leads.filter(l => (l.rating || 0) >= 4).length;
-    setStats({ total, avgRating: parseFloat(avgRating.toFixed(1)), withPhone, withWebsite, highRated });
+    console.log('🔄 Dashboard mounting - fetching leads...');
+    fetchLeads();
+  }, []);
+
+  // ✅ REFRESH EVERY 10 SECONDS
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refresh dashboard...');
+      fetchLeads();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ✅ Update stats when leads change
+  useEffect(() => {
+    if (leads && leads.length > 0) {
+      console.log('📊 Dashboard: Updating stats for', leads.length, 'leads');
+      
+      const newLeads = leads.filter(l => l.status === 'new' || !l.status);
+      const contacted = leads.filter(l => l.status === 'contacted');
+      const qualified = leads.filter(l => l.status === 'qualified');
+      const converted = leads.filter(l => l.status === 'converted' || l.status === 'closed');
+      
+      setStats({
+        total: leads.length,
+        new: newLeads.length,
+        contacted: contacted.length,
+        qualified: qualified.length,
+        converted: converted.length
+      });
+    } else {
+      setStats({
+        total: 0,
+        new: 0,
+        contacted: 0,
+        qualified: 0,
+        converted: 0
+      });
+    }
   }, [leads]);
 
-  // Last 7 days data
-  const last7Days = [...Array(7)].map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().split('T')[0];
-  });
-  const chartData = last7Days.map(date => ({
-    date: date.slice(5),
-    count: leads.filter(l => l.createdAt?.split('T')[0] === date).length
-  }));
-
-  const pieData = [
-    { name: 'With Phone', value: stats.withPhone },
-    { name: 'No Phone', value: stats.total - stats.withPhone }
-  ];
-  // ✅ Purple/Pink palette
-  const COLORS = ['#8b5cf6', '#d8b4fe']; // purple-500 and purple-200
-
-  const ratingData = [
-    { rating: '1★', count: leads.filter(l => Math.floor(l.rating || 0) === 1).length },
-    { rating: '2★', count: leads.filter(l => Math.floor(l.rating || 0) === 2).length },
-    { rating: '3★', count: leads.filter(l => Math.floor(l.rating || 0) === 3).length },
-    { rating: '4★', count: leads.filter(l => Math.floor(l.rating || 0) === 4).length },
-    { rating: '5★', count: leads.filter(l => Math.floor(l.rating || 0) === 5).length },
+  // Chart data
+  const chartData = [
+    { name: 'New', value: stats.new },
+    { name: 'Contacted', value: stats.contacted },
+    { name: 'Qualified', value: stats.qualified },
+    { name: 'Converted', value: stats.converted }
   ];
 
-  if (loading) {
-    return <div className="p-6 text-center">Loading leads...</div>;
-  }
+  const COLORS = ['#7c3aed', '#3b82f6', '#22c55e', '#ec4899'];
+
+  // Stat cards
+  const statCards = [
+    { 
+      title: 'Total Leads', 
+      value: stats.total, 
+      icon: <Users className="text-purple-500" size={24} />,
+      color: 'from-purple-500 to-purple-600'
+    },
+    { 
+      title: 'New Leads', 
+      value: stats.new, 
+      icon: <UserPlus className="text-blue-500" size={24} />,
+      color: 'from-blue-500 to-blue-600'
+    },
+    { 
+      title: 'Qualified', 
+      value: stats.qualified, 
+      icon: <Award className="text-green-500" size={24} />,
+      color: 'from-green-500 to-green-600'
+    },
+    { 
+      title: 'Converted', 
+      value: stats.converted, 
+      icon: <TrendingUp className="text-pink-500" size={24} />,
+      color: 'from-pink-500 to-pink-600'
+    }
+  ];
+
+  // Recent leads (last 5)
+  const recentLeads = leads.slice(0, 5);
 
   return (
-    <div>
-      {/* ✅ Purple/Pink header gradient */}
-      <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
         Dashboard
       </h1>
+      <p className="text-gray-500 mb-6">Overview of your lead generation activities</p>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
-        <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between hover:shadow-xl transition">
-          <div><p className="text-gray-500 text-sm">Total Leads</p><p className="text-3xl font-bold text-gray-800">{stats.total}</p></div>
-          <div className="bg-purple-100 p-3 rounded-full"><Users className="w-6 h-6 text-purple-600" /></div>
-        </div>
-        <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between">
-          <div><p className="text-gray-500 text-sm">Avg Rating</p><p className="text-3xl font-bold text-gray-800">{stats.avgRating}★</p></div>
-          <div className="bg-yellow-100 p-3 rounded-full"><Star className="w-6 h-6 text-yellow-600" /></div>
-        </div>
-        <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between">
-          <div><p className="text-gray-500 text-sm">With Phone</p><p className="text-3xl font-bold text-gray-800">{stats.withPhone}</p></div>
-          <div className="bg-green-100 p-3 rounded-full"><Phone className="w-6 h-6 text-green-600" /></div>
-        </div>
-        <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between">
-          <div><p className="text-gray-500 text-sm">With Website</p><p className="text-3xl font-bold text-gray-800">{stats.withWebsite}</p></div>
-          <div className="bg-blue-100 p-3 rounded-full"><Globe className="w-6 h-6 text-blue-600" /></div>
-        </div>
-        <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between">
-          <div><p className="text-gray-500 text-sm">4+ Stars</p><p className="text-3xl font-bold text-gray-800">{stats.highRated}</p></div>
-          <div className="bg-purple-100 p-3 rounded-full"><Award className="w-6 h-6 text-purple-600" /></div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {statCards.map((stat, index) => (
+          <div key={index} className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-500 text-sm">{stat.title}</p>
+                <p className="text-2xl font-bold text-gray-800 mt-1">
+                  {loading ? '...' : stat.value}
+                </p>
+              </div>
+              <div className={`bg-gradient-to-r ${stat.color} p-3 rounded-xl text-white`}>
+                {stat.icon}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-5 rounded-2xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5" /> Leads (Last 7 Days)</h2>
-          <ResponsiveContainer width="100%" height={280}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Bar Chart */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h3 className="font-semibold text-gray-700 mb-4">Lead Distribution</h3>
+          <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData}>
-              <XAxis dataKey="date" />
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="count" fill="#8b5cf6" radius={[8,8,0,0]} /> {/* purple-500 */}
+              <Bar dataKey="value" fill="#7c3aed" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="bg-white p-5 rounded-2xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Phone Availability</h2>
-          <ResponsiveContainer width="100%" height={280}>
+
+        {/* Pie Chart */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h3 className="font-semibold text-gray-700 mb-4">Lead Status</h3>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label>
-                <Cell fill={COLORS[0]} />
-                <Cell fill={COLORS[1]} />
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                fill="#8884d8"
+                paddingAngle={5}
+                dataKey="value"
+                label
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
               </Pie>
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="bg-white p-5 rounded-2xl shadow-lg lg:col-span-2">
-          <h2 className="text-xl font-semibold mb-4">Rating Distribution</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={ratingData}>
-              <XAxis dataKey="rating" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#d946ef" radius={[8,8,0,0]} /> {/* pink-500 */}
-            </BarChart>
-          </ResponsiveContainer>
+      </div>
+
+      {/* Recent Leads */}
+      <div className="bg-white rounded-xl shadow-sm p-5">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-semibold text-gray-700">Recent Leads</h3>
+          <span className="text-sm text-gray-400">{leads.length} total leads</span>
         </div>
+        
+        {loading ? (
+          <div className="text-center py-8 text-gray-400">Loading leads...</div>
+        ) : recentLeads.length === 0 ? (
+          <div className="text-center py-8 text-gray-400">
+            <Users size={48} className="mx-auto mb-2 opacity-30" />
+            <p>No leads yet</p>
+            <p className="text-sm">Search and save leads from Social or Domain Insights</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {recentLeads.map((lead, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 font-medium text-gray-800">{lead.name || 'Unknown'}</td>
+                    <td className="px-4 py-2 text-gray-600">{lead.email || '-'}</td>
+                    <td className="px-4 py-2 text-gray-600">{lead.source || '-'}</td>
+                    <td className="px-4 py-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        lead.status === 'new' || !lead.status ? 'bg-purple-100 text-purple-600' :
+                        lead.status === 'contacted' ? 'bg-blue-100 text-blue-600' :
+                        lead.status === 'qualified' ? 'bg-green-100 text-green-600' :
+                        'bg-pink-100 text-pink-600'
+                      }`}>
+                        {lead.status || 'new'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
