@@ -7,13 +7,19 @@ const Dashboard = () => {
   const [leads, setLeads] = useState([]);
   const [stats, setStats] = useState({ total: 0, avgRating: 0, withPhone: 0, withWebsite: 0, highRated: 0 });
 
-  // ✅ DIRECT FETCH - NO API IMPORT
   const API_URL = 'https://leadconnect-backend-production.up.railway.app/api';
 
   useEffect(() => {
-    fetch(`${API_URL}/leads`)
+    // ✅ CACHE DISABLE - NO 304
+    fetch(`${API_URL}/leads`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
       .then(res => res.json())
       .then(data => {
+        console.log('✅ Leads fetched:', data?.length || 0);
         setLeads(data);
         const total = data.length;
         const avgRating = total ? (data.reduce((s, l) => s + (l.rating || 0), 0) / total).toFixed(1) : 0;
