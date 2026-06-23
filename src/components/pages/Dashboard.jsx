@@ -1,21 +1,25 @@
+// frontend/src/pages/Dashboard.jsx
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import api from '../api';
 import { Users, Star, Phone, Globe, Award, TrendingUp } from 'lucide-react';
 
 const Dashboard = () => {
   const [leads, setLeads] = useState([]);
   const [stats, setStats] = useState({ total: 0, avgRating: 0, withPhone: 0, withWebsite: 0, highRated: 0 });
 
+  // ✅ DIRECT FETCH - NO API IMPORT
+  const API_URL = 'https://leadconnect-backend-production.up.railway.app/api';
+
   useEffect(() => {
-    api.get('/leads')
-      .then(res => {
-        setLeads(res.data);
-        const total = res.data.length;
-        const avgRating = total ? (res.data.reduce((s, l) => s + (l.rating || 0), 0) / total).toFixed(1) : 0;
-        const withPhone = res.data.filter(l => l.phone && l.phone.trim()).length;
-        const withWebsite = res.data.filter(l => l.website && l.website.trim()).length;
-        const highRated = res.data.filter(l => (l.rating || 0) >= 4).length;
+    fetch(`${API_URL}/leads`)
+      .then(res => res.json())
+      .then(data => {
+        setLeads(data);
+        const total = data.length;
+        const avgRating = total ? (data.reduce((s, l) => s + (l.rating || 0), 0) / total).toFixed(1) : 0;
+        const withPhone = data.filter(l => l.phone && l.phone.trim()).length;
+        const withWebsite = data.filter(l => l.website && l.website.trim()).length;
+        const highRated = data.filter(l => (l.rating || 0) >= 4).length;
         setStats({ total, avgRating, withPhone, withWebsite, highRated });
       })
       .catch(console.error);
@@ -65,4 +69,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
