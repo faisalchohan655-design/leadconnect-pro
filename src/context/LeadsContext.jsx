@@ -14,9 +14,10 @@ export const LeadsProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await api.get('/leads');
-      setLeads(response.data);
+      console.log('✅ Fetched leads:', response.data?.length || 0);
+      setLeads(response.data || []);
     } catch (error) {
-      console.error('Fetch error:', error);
+      console.error('❌ Fetch error:', error);
     } finally {
       setLoading(false);
     }
@@ -38,7 +39,7 @@ export const LeadsProvider = ({ children }) => {
       
       console.log('✅ Save response:', response.data);
       
-      // Refresh leads after saving
+      // ✅ IMPORTANT: Refresh leads after saving
       await fetchLeads();
       
       toast.success(`${toSave.length} leads saved successfully!`);
