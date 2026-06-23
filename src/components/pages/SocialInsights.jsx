@@ -1,6 +1,4 @@
 // frontend/src/pages/SocialInsights.jsx
-// ✅ POORA FILE REPLACE KARO
-
 import { useState } from 'react';
 import { useLeads } from '../context/LeadsContext';
 import api from '../api';
@@ -10,6 +8,8 @@ import * as XLSX from 'xlsx';
 
 const SocialInsights = () => {
   const { addLeads } = useLeads();
+
+  // State
   const [activePlatform, setActivePlatform] = useState('google_maps');
   const [searchType, setSearchType] = useState('keyword');
   const [query, setQuery] = useState('');
@@ -49,7 +49,9 @@ const SocialInsights = () => {
     { id: 'tiktok', name: 'TikTok', icon: '🎵', color: 'bg-black' }
   ];
 
-  // 🔍 SEARCH
+  // ==========================================
+  // SEARCH FUNCTION
+  // ==========================================
   const handleSearch = async () => {
     if (!query.trim()) {
       toast.error('Please enter a search query');
@@ -85,7 +87,9 @@ const SocialInsights = () => {
     }
   };
 
-  // ✅ SAVE ALL - YAHI FIX HAI
+  // ==========================================
+  // ✅ SAVE ALL - FIXED WITH AWAIT
+  // ==========================================
   const handleSaveAll = async () => {
     if (filteredResults.length === 0) {
       toast.error('No leads to save');
@@ -126,7 +130,9 @@ const SocialInsights = () => {
     }
   };
 
-  // ✅ SAVE SELECTED
+  // ==========================================
+  // ✅ SAVE SELECTED - FIXED WITH AWAIT
+  // ==========================================
   const handleSaveSelected = async () => {
     if (selected.length === 0) {
       toast.error('No leads selected');
@@ -167,7 +173,9 @@ const SocialInsights = () => {
     }
   };
 
-  // DELETE SELECTED
+  // ==========================================
+  // OTHER FUNCTIONS
+  // ==========================================
   const handleDeleteSelected = () => {
     if (selected.length === 0) {
       toast.error('No leads selected');
@@ -179,7 +187,6 @@ const SocialInsights = () => {
     toast.success(`${selected.length} leads removed`);
   };
 
-  // COPY URLs
   const handleCopyUrls = () => {
     const selectedLeads = results.filter((_, idx) => selected.includes(idx));
     if (selectedLeads.length === 0) {
@@ -198,7 +205,6 @@ const SocialInsights = () => {
     }
   };
 
-  // COPY EMAILS
   const handleCopyEmails = () => {
     const selectedLeads = results.filter((_, idx) => selected.includes(idx));
     if (selectedLeads.length === 0) {
@@ -217,7 +223,6 @@ const SocialInsights = () => {
     }
   };
 
-  // EXPORT CSV
   const exportCSV = () => {
     if (filteredResults.length === 0) {
       toast.error('No data to export');
@@ -245,7 +250,6 @@ const SocialInsights = () => {
     toast.success('CSV exported');
   };
 
-  // EXPORT EXCEL
   const exportExcel = () => {
     if (filteredResults.length === 0) {
       toast.error('No data');
@@ -268,7 +272,9 @@ const SocialInsights = () => {
     toast.success('Excel exported');
   };
 
-  // FILTER RESULTS
+  // ==========================================
+  // FILTERS & PAGINATION
+  // ==========================================
   const filteredResults = results.filter(l => {
     if (filterPlatform !== 'all' && l.platform !== filterPlatform) return false;
     if (qualityFilter === 'verified' && !l.verified) return false;
@@ -278,7 +284,6 @@ const SocialInsights = () => {
     return true;
   });
 
-  // PAGINATION
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentLeads = filteredResults.slice(indexOfFirst, indexOfLast);
@@ -313,6 +318,9 @@ const SocialInsights = () => {
     return stars;
   };
 
+  // ==========================================
+  // RENDER
+  // ==========================================
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">
@@ -475,12 +483,10 @@ const SocialInsights = () => {
                 {selected.length === currentLeads.length ? '☑️' : '☐'} Select All
               </button>
               
-              {/* ✅ SAVE SELECTED - AWAIT LAGAO */}
               <button onClick={handleSaveSelected} disabled={saving || selected.length === 0} className="bg-purple-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-purple-700 disabled:opacity-50">
                 💾 {saving ? 'Saving...' : `Save Selected (${selected.length})`}
               </button>
               
-              {/* ✅ SAVE ALL - AWAIT LAGAO */}
               <button onClick={handleSaveAll} disabled={saving} className="bg-green-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm hover:bg-green-700 disabled:opacity-50">
                 💾 {saving ? 'Saving...' : 'Save All'}
               </button>
