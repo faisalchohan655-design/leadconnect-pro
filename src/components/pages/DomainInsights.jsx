@@ -1,7 +1,7 @@
-// frontend/src/pages/DomainInsights.jsx
+// frontend/src/components/pages/DomainInsights.jsx
 import { useState } from 'react';
-import { useLeads } from '../context/LeadsContext';
-import api from '../api';
+import { useLeads } from '../../context/LeadsContext.jsx';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { FaSearch, FaSpinner } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
@@ -119,7 +119,7 @@ const DomainInsights = () => {
   };
 
   // ==========================================
-  // OTHER FUNCTIONS
+  // DELETE SELECTED
   // ==========================================
   const handleDeleteSelected = () => {
     if (selected.length === 0) {
@@ -132,6 +132,9 @@ const DomainInsights = () => {
     toast.success(`${selected.length} leads removed`);
   };
 
+  // ==========================================
+  // EXPORT CSV
+  // ==========================================
   const exportCSV = () => {
     if (filteredResults.length === 0) {
       toast.error('No data to export');
@@ -150,6 +153,9 @@ const DomainInsights = () => {
     toast.success('CSV exported');
   };
 
+  // ==========================================
+  // EXPORT EXCEL
+  // ==========================================
   const exportExcel = () => {
     if (filteredResults.length === 0) {
       toast.error('No data');
