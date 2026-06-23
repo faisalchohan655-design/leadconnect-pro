@@ -7,59 +7,31 @@ const LeadsContext = createContext();
 
 export const LeadsProvider = ({ children }) => {
   const [leads, setLeads] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  // Fetch leads from backend
   const fetchLeads = async () => {
-    setLoading(true);
     try {
-      const response = await api.get('/leads');
-      console.log('✅ Fetched leads:', response.data?.length || 0);
-      setLeads(response.data || []);
-    } catch (error) {
-      console.error('❌ Fetch error:', error);
-    } finally {
-      setLoading(false);
+      const res = await api.get('/leads');
+      setLeads(res.data || []);
+    } catch (err) {
+      console.error('Fetch error:', err);
     }
   };
 
-  // Add leads - THIS IS THE IMPORTANT FUNCTION
   const addLeads = async (newLeads) => {
     try {
       const toSave = Array.isArray(newLeads) ? newLeads : [newLeads];
       
-      if (toSave.length === 0) {
-        toast.error('No leads to save');
-        return;
-      }
-
-      console.log('📝 Saving leads:', toSave.length);
+      // ✅ Save to backend
+      await api.post('/leads/bulk', { leads: toSave });
       
-      const response = await api.post('/leads/bulk', { leads: toSave });
+      // ✅ FORCE REFRESH - YAHI FIX HAI
+      const fresh = await api.get('/leads');
+      setLeads(fresh.data || []);
       
-      console.log('✅ Save response:', response.data);
-      
-      // ✅ IMPORTANT: Refresh leads after saving
-      await fetchLeads();
-      
-      toast.success(`${toSave.length} leads saved successfully!`);
-      return response.data;
-    } catch (error) {
-      console.error('❌ Save error:', error);
-      toast.error(error.response?.data?.error || 'Failed to save leads');
-      throw error;
-    }
-  };
-
-  // Delete a lead
-  const deleteLead = async (id) => {
-    try {
-      await api.delete(`/leads/${id}`);
-      await fetchLeads();
-      toast.success('Lead deleted');
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast.error('Failed to delete lead');
+      toast.success(`${toSave.length} leads saved!`);
+    } catch (err) {
+      console.error('Save error:', err);
+      toast.error('Failed to save');
     }
   };
 
@@ -68,25 +40,16 @@ export const LeadsProvider = ({ children }) => {
   }, []);
 
   return (
-    <LeadsContext.Provider value={{ 
-      leads, 
-      loading, 
-      addLeads, 
-      deleteLead,
-      fetchLeads, 
-      setLeads 
-    }}>
+    <LeadsContext.Provider value={{ leads, addLeads, fetchLeads, setLeads }}>
       {children}
     </LeadsContext.Provider>
   );
 };
 
 export const useLeads = () => {
-  const context = useContext(LeadsContext);
-  if (!context) {
-    throw new Error('useLeads must be used within a LeadsProvider');
-  }
-  return context;
+  const ctx = useContext(LeadsContext);
+  if (!ctx) throw new Error('useLeads must be used within LeadsProvider');
+  return ctx;
 };
 
 export default LeadsContext;
