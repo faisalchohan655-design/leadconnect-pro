@@ -17,14 +17,15 @@ export const LeadsProvider = ({ children }) => {
     }
   };
 
+  // ✅ YAHI FUNCTION FIX KARO
   const addLeads = async (newLeads) => {
     try {
       const toSave = Array.isArray(newLeads) ? newLeads : [newLeads];
       
-      // ✅ Save to backend
+      // ✅ Backend mein save karo
       await api.post('/leads/bulk', { leads: toSave });
       
-      // ✅ FORCE REFRESH - YAHI FIX HAI
+      // ✅ FORCE REFRESH - Dashboard update
       const fresh = await api.get('/leads');
       setLeads(fresh.data || []);
       
