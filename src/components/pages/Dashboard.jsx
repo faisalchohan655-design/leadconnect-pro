@@ -10,18 +10,15 @@ const Dashboard = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ APNI BACKEND URL DALO
   const API_URL = 'https://leadconnect-backend-production.up.railway.app/api';
 
   const fetchLeads = async () => {
     try {
-      console.log('📡 Fetching leads from:', API_URL);
       const res = await fetch(`${API_URL}/leads`);
       const data = await res.json();
-      console.log('✅ Fetched leads:', data?.length || 0);
       setLeads(data || []);
     } catch (err) {
-      console.error('❌ Fetch error:', err);
+      console.error('Error:', err);
     } finally {
       setLoading(false);
     }
@@ -33,11 +30,13 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Stats
   const total = leads?.length || 0;
   const withPhone = leads?.filter(l => l.phone).length || 0;
   const withWebsite = leads?.filter(l => l.website).length || 0;
   const highRated = leads?.filter(l => l.rating >= 4).length || 0;
 
+  // ✅ FIXED: Last 7 Days
   const getLast7Days = () => {
     const days = [];
     for (let i = 6; i >= 0; i--) {
@@ -45,7 +44,7 @@ const Dashboard = () => {
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
       const count = leads?.filter(l => {
-        const created = new Date(l.createdAt || l.createdAt);
+        const created = new Date(l.createdAt);
         return created.toISOString().split('T')[0] === dateStr;
       }).length || 0;
       days.push({ date: dateStr, count });
@@ -54,6 +53,8 @@ const Dashboard = () => {
   };
 
   const chartData = getLast7Days();
+
+  // ✅ FIXED: Rating Distribution
   const ratingData = [1, 2, 3, 4, 5].map(r => ({
     name: `${r}★`,
     count: leads?.filter(l => Math.floor(l.rating || 0) === r).length || 0
@@ -71,6 +72,7 @@ const Dashboard = () => {
       <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
       <p className="text-gray-500 mb-6">Overview of your lead generation activities</p>
 
+      {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow-sm p-5">
           <div className="flex justify-between items-start">
@@ -110,13 +112,17 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Line Chart */}
       <div className="bg-white rounded-xl shadow-sm p-5 mb-6">
-        <h3 className="font-semibold mb-4">Leads (Last 7 Days)</h3>
+        <h3 className="font-semibold text-gray-700 mb-4">Leads (Last 7 Days)</h3>
         {loading ? <div className="text-center py-8 text-gray-400">Loading...</div> : (
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tickFormatter={d => `${String(new Date(d).getMonth()+1).padStart(2,'0')}-${String(new Date(d).getDate()).padStart(2,'0')}`} />
+              <XAxis dataKey="date" tickFormatter={d => {
+                const dt = new Date(d);
+                return `${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+              }} />
               <YAxis allowDecimals={false} />
               <Tooltip />
               <Line type="monotone" dataKey="count" stroke="#7c3aed" strokeWidth={2} dot={{ fill: '#7c3aed' }} />
@@ -125,9 +131,10 @@ const Dashboard = () => {
         )}
       </div>
 
+      {/* Pie + Bar Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h3 className="font-semibold mb-4">Phone Availability</h3>
+          <h3 className="font-semibold text-gray-700 mb-4">Phone Availability</h3>
           {loading ? <div className="text-center py-8 text-gray-400">Loading...</div> : (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
@@ -141,7 +148,7 @@ const Dashboard = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h3 className="font-semibold mb-4">Rating Distribution</h3>
+          <h3 className="font-semibold text-gray-700 mb-4">Rating Distribution</h3>
           {loading ? <div className="text-center py-8 text-gray-400">Loading...</div> : (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={ratingData}>
