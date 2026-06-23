@@ -1,6 +1,5 @@
 // frontend/src/pages/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
-import api from '../api';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line 
@@ -11,12 +10,14 @@ const Dashboard = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ✅ DIRECT FETCH - NO API FILE NEEDED
   const fetchLeads = async () => {
     try {
-      const res = await api.get('/leads');
-      setLeads(res.data || []);
+      const res = await fetch('https://your-backend.railway.app/api/leads');
+      const data = await res.json();
+      setLeads(data || []);
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -24,15 +25,17 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchLeads();
-    const interval = setInterval(fetchLeads, 5000);
+    const interval = setInterval(fetchLeads, 10000);
     return () => clearInterval(interval);
   }, []);
 
+  // Stats
   const total = leads?.length || 0;
   const withPhone = leads?.filter(l => l.phone).length || 0;
   const withWebsite = leads?.filter(l => l.website).length || 0;
   const highRated = leads?.filter(l => l.rating >= 4).length || 0;
 
+  // Last 7 days
   const getLast7Days = () => {
     const days = [];
     for (let i = 6; i >= 0; i--) {
@@ -49,7 +52,6 @@ const Dashboard = () => {
   };
 
   const chartData = getLast7Days();
-
   const ratingData = [1, 2, 3, 4, 5].map(r => ({
     name: `${r}★`,
     count: leads?.filter(l => Math.floor(l.rating || 0) === r).length || 0
