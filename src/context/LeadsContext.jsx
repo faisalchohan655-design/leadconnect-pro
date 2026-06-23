@@ -1,37 +1,33 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+// FRONTEND FILE - State management
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api';
+import toast from 'react-hot-toast';
 
 const LeadsContext = createContext();
 
 export const LeadsProvider = ({ children }) => {
   const [leads, setLeads] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const fetchLeads = async () => {
-    setLoading(true);
     try {
       const res = await api.get('/leads');
       setLeads(res.data);
-      setError(null);
     } catch (err) {
-      setError('Failed to load leads');
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const addLeads = (newLeads) => {
-    setLeads(prev => [...newLeads, ...prev]);
-  };
-
-  const deleteLead = (id) => {
-    setLeads(prev => prev.filter(l => l._id !== id));
-  };
-
-  const deleteMultiple = (ids) => {
-    setLeads(prev => prev.filter(l => !ids.includes(l._id)));
+  const addLeads = async (newLeads) => {
+    try {
+      const toSave = Array.isArray(newLeads) ? newLeads : [newLeads];
+      const res = await api.post('/leads/bulk', { leads: toSave });
+      await fetchLeads();
+      toast.success(`${toSave.length} leads saved!`);
+      return res.data;
+    } catch (err) {
+      toast.error('Failed to save');
+      throw err;
+    }
   };
 
   useEffect(() => {
@@ -39,10 +35,16 @@ export const LeadsProvider = ({ children }) => {
   }, []);
 
   return (
-    <LeadsContext.Provider value={{ leads, loading, error, fetchLeads, addLeads, deleteLead, deleteMultiple }}>
+    <LeadsContext.Provider value={{ leads, addLeads, fetchLeads, setLeads }}>
       {children}
     </LeadsContext.Provider>
   );
 };
 
-export const useLeads = () => useContext(LeadsContext);
+export const useLeads = () => {
+  const ctx = useContext(LeadsContext);
+  if (!ctx) throw new Error('useLeads must be used within LeadsProvider');
+  return ctx;
+};
+
+export default LeadsContext;
