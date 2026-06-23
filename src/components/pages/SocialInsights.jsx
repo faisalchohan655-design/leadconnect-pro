@@ -1,7 +1,7 @@
-// frontend/src/pages/SocialInsights.jsx
+// frontend/src/components/pages/SocialInsights.jsx
 import { useState } from 'react';
-import { useLeads } from '../context/LeadsContext';
-import api from '../api';
+import { useLeads } from '../../context/LeadsContext.jsx';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { FaSearch, FaSpinner, FaGlobe, FaFilter, FaCheckCircle, FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
@@ -174,7 +174,7 @@ const SocialInsights = () => {
   };
 
   // ==========================================
-  // OTHER FUNCTIONS
+  // DELETE SELECTED
   // ==========================================
   const handleDeleteSelected = () => {
     if (selected.length === 0) {
@@ -187,6 +187,9 @@ const SocialInsights = () => {
     toast.success(`${selected.length} leads removed`);
   };
 
+  // ==========================================
+  // COPY URLs
+  // ==========================================
   const handleCopyUrls = () => {
     const selectedLeads = results.filter((_, idx) => selected.includes(idx));
     if (selectedLeads.length === 0) {
@@ -205,6 +208,9 @@ const SocialInsights = () => {
     }
   };
 
+  // ==========================================
+  // COPY EMAILS
+  // ==========================================
   const handleCopyEmails = () => {
     const selectedLeads = results.filter((_, idx) => selected.includes(idx));
     if (selectedLeads.length === 0) {
@@ -223,6 +229,9 @@ const SocialInsights = () => {
     }
   };
 
+  // ==========================================
+  // EXPORT CSV
+  // ==========================================
   const exportCSV = () => {
     if (filteredResults.length === 0) {
       toast.error('No data to export');
@@ -250,6 +259,9 @@ const SocialInsights = () => {
     toast.success('CSV exported');
   };
 
+  // ==========================================
+  // EXPORT EXCEL
+  // ==========================================
   const exportExcel = () => {
     if (filteredResults.length === 0) {
       toast.error('No data');
