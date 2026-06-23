@@ -1,28 +1,39 @@
 {
   "name": "leadconnect-pro",
   "version": "1.0.0",
+  "description": "LeadConnect Pro - Professional Lead Generation Platform",
   "type": "module",
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
     "axios": "^1.6.2",
-    "react-hot-toast": "^2.4.1",
-    "recharts": "^2.10.3",
-    "xlsx": "^0.18.5",
+    "chart.js": "^4.4.0",
     "lucide-react": "^0.292.0",
-    "react-icons": "^5.0.0"
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-icons": "^4.12.0",
+    "react-router-dom": "^6.20.0",
+    "recharts": "^2.10.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
-    "vite": "^5.0.0"
+    "vite": "^5.4.21"
   }
 }
